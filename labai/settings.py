@@ -1,7 +1,7 @@
 """
 LabAI Django Settings
 Database: Supabase PostgreSQL via DATABASE_URL
-Host:     Back4App Containers (port 8000)
+Host:     Back4App Containers
 """
 import os
 import dj_database_url
@@ -11,13 +11,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
-    "django-insecure-change-this-in-back4app-env-vars-now"
+    "django-insecure-change-this-in-back4app-env-vars"
 )
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS_ENV = os.environ.get("ALLOWED_HOSTS", "*")
-ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_ENV.split(",")]
+ALLOWED_HOSTS = ["*"]  # Back4App handles SSL termination
 
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
@@ -49,31 +48,27 @@ TEMPLATES = [
 WSGI_APPLICATION = "labai.wsgi.application"
 
 # ── DATABASE ──────────────────────────────────────────────────────
-# Back4App: set DATABASE_URL in Environment Variables
-# Supabase URI format:
-#   postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
-#
-# If DATABASE_URL is not set, falls back to local SQLite so app
-# can at least start up and show error messages instead of crashing.
+# Set DATABASE_URL in Back4App → Settings → Environment Variables
+# Get it from Supabase → Project Settings → Database → URI
+# Use the "Transaction pooler" URL (port 6543), NOT the direct connection
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
+_DB_URL = os.environ.get("DATABASE_URL", "")
 
-if DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=60,
-            conn_health_checks=True,
-        )
-    }
+if _DB_URL:
+    # Parse the URL and configure Postgres
+    _config = dj_database_url.parse(_DB_URL, conn_max_age=60)
+    # Add SSL options required by Supabase
+    if "OPTIONS" not in _config:
+        _config["OPTIONS"] = {}
+    _config["OPTIONS"]["sslmode"] = "require"
+    DATABASES = {"default": _config}
 else:
-    # Fallback — SQLite in /tmp (writable on Back4App, not persistent)
-    # This lets the app START even without DATABASE_URL set.
-    # Set DATABASE_URL in Back4App env vars to use Supabase.
+    # Fallback: SQLite in /tmp so the app can at least start
+    # This is temporary — set DATABASE_URL in Back4App env vars!
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": "/tmp/labai_fallback.db",
+            "NAME": "/tmp/labai_temp.db",
         }
     }
 
@@ -91,8 +86,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ── SECURITY ──────────────────────────────────────────────────────
-if not DEBUG:
-    SECURE_BROWSER_XSS_FILTER   = True
-    X_FRAME_OPTIONS              = "DENY"
-    SECURE_CONTENT_TYPE_NOSNIFF = True
+# Security - keep simple for Back4App
+SECURE_BROWSER_XSS_FILTER   = True
+X_FRAME_OPTIONS              = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
