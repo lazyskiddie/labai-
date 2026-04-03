@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LabAI Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090d;--s1:#0d1118;--s2:#131b25;--s3:#1a2535;
+  --b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.11);
+  --t1:#d8e2f0;--t2:#6a7f96;--t3:#334455;
+  --g:#34d99a;--gd:rgba(52,217,154,.1);--gm:rgba(52,217,154,.22);
+  --r:#f04848;--rd:rgba(240,72,72,.1);
+  --a:#f0b030;--ad:rgba(240,176,48,.1);
+  --b:#4a8ef0;--bd:rgba(74,142,240,.1);
+  --fn:'Inter',system-ui,sans-serif;--fm:'DM Mono',monospace;
+}
+body{font-family:var(--fn);background:var(--bg);color:var(--t1);min-height:100vh;font-size:14px;}
+/* LOGIN */
+#login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lcard{background:var(--s1);border:1px solid var(--b2);border-radius:20px;padding:44px 36px;width:340px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6);}
+.llogo{font-size:26px;font-weight:700;color:var(--g);margin-bottom:4px;}
+.lsub{font-size:11px;color:var(--t3);font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;margin-bottom:28px;}
+.linput{width:100%;padding:10px 13px;background:var(--s2);border:1px solid var(--b2);border-radius:9px;color:var(--t1);font-size:14px;margin-bottom:12px;outline:none;transition:border-color .15s;font-family:var(--fn);}
+.linput:focus{border-color:var(--g);}
+.lbtn{width:100%;padding:11px;background:var(--g);color:#07090d;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;}
+.lbtn:hover{opacity:.85}
+.lerr{font-size:12px;color:var(--r);margin-top:8px;font-family:var(--fm);min-height:16px;}
+.lback{display:block;margin-top:12px;font-size:12px;color:var(--t3);text-decoration:none;}
+/* SHELL */
+#app{display:none;}
+.shell{display:flex;min-height:100vh;}
+.sb{width:220px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;}
+.sb-logo{padding:20px 18px 14px;border-bottom:1px solid var(--b1);}
+.sb-name{font-size:18px;font-weight:700;color:var(--g);}
+.sb-tag{font-size:10px;color:var(--t3);font-family:var(--fm);margin-top:2px;text-transform:uppercase;letter-spacing:.08em;}
+.nav{padding:10px 8px;flex:1;}
+.ns{font-size:10px;color:var(--t3);font-family:var(--fm);text-transform:uppercase;letter-spacing:.1em;padding:8px 10px 4px;}
+.nb{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--t2);font-size:13px;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;transition:all .15s;}
+.nb:hover{background:var(--s2);color:var(--t1);}
+.nb.active{background:var(--gd);color:var(--g);}
+.nb-ic{font-size:14px;flex-shrink:0;}
+.sb-footer{padding:12px 16px;border-top:1px solid var(--b1);font-size:11px;font-family:var(--fm);color:var(--t3);}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--t3);display:inline-block;margin-right:5px;}
+.sdot.on{background:var(--g);box-shadow:0 0 6px var(--g);}
+.sdot.pulse{background:var(--a);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.out-btn{width:100%;margin-top:6px;padding:6px;background:none;border:1px solid var(--b2);border-radius:7px;color:var(--t3);font-size:12px;cursor:pointer;font-family:var(--fn);transition:all .15s;}
+.out-btn:hover{border-color:var(--r);color:var(--r);}
+.main{margin-left:220px;flex:1;padding:28px 30px;max-width:1080px;}
+.panel{display:none;}.panel.active{display:block;}
+.pt{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:3px;}
+.ps2{color:var(--t2);font-size:13px;margin-bottom:22px;}
+/* STATS */
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.sc{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px;}
+.sn{font-size:26px;font-weight:600;font-family:var(--fm);margin-bottom:2px;}
+.sl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;}
+.sc.g .sn{color:var(--g)}.sc.r .sn{color:var(--r)}.sc.a .sn{color:var(--a)}.sc.b .sn{color:var(--b)}
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.ct{font-size:10px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--t2);margin-bottom:12px;}
+/* UPLOAD ZONE */
+.uz{border:1.5px dashed var(--b2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;background:var(--s1);transition:all .2s;}
+.uz:hover,.uz.drag{border-color:var(--gm);background:var(--s2);}
+.ui{width:46px;height:46px;border-radius:11px;background:var(--s2);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;}
+.uz h3{font-size:14px;font-weight:500;margin-bottom:4px;}
+.uz p{font-size:12px;color:var(--t2);}
+.uhint{font-size:11px;color:var(--t3);font-family:var(--fm);margin-top:8px;padding:5px 11px;background:var(--s2);border-radius:5px;display:inline-block;}
+input[type=file]{display:none;}
+/* PROGRESS */
+.pw2{margin:10px 0;}
+.pl2{font-size:11px;color:var(--t2);font-family:var(--fm);margin-bottom:5px;}
+.pb2{height:3px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.pf2{height:100%;background:var(--g);border-radius:2px;transition:width .3s;}
+/* STATUS */
+.st{padding:9px 13px;border-radius:8px;font-size:12px;font-family:var(--fm);margin:8px 0;display:none;}
+.st.show{display:block;}
+.st.ok{background:var(--gd);color:var(--g);border:1px solid var(--gm);}
+.st.err{background:var(--rd);color:var(--r);}
+.st.warn{background:var(--ad);color:var(--a);}
+.st.info{background:var(--bd);color:var(--b);}
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:8px;font-size:12px;font-family:var(--fn);font-weight:500;cursor:pointer;border:1px solid var(--b2);background:var(--s2);color:var(--t1);transition:all .15s;}
+.btn:hover{background:var(--s3);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn.primary{background:var(--g);color:#07090d;border-color:transparent;font-weight:600;}
+.btn.primary:hover{opacity:.85;}
+.btn.danger{border-color:var(--r);color:var(--r);}
+.btn.danger:hover{background:var(--rd);}
+.brow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center;}
+/* BATCH */
+.batch-nums{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;}
+.bn{text-align:center;padding:10px;background:var(--s2);border-radius:8px;}
+.bn-num{font-size:20px;font-weight:600;font-family:var(--fm);}
+.bn-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;}
+.bn.g .bn-num{color:var(--g)}.bn.a .bn-num{color:var(--a)}.bn.r .bn-num{color:var(--r)}.bn.b .bn-num{color:var(--b)}
+/* REVIEW */
+.ri2{background:var(--s1);border:1px solid var(--b1);border-radius:9px;margin-bottom:6px;overflow:hidden;}
+.ri2.ready{border-color:var(--gm);}
+.ri2-hdr{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;}
+.ri2-name{flex:1;font-size:12px;font-family:var(--fm);color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ri2-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--fm);}
+.ri2-badge.waiting{background:var(--s2);color:var(--t3);}
+.ri2-badge.processing{background:var(--ad);color:var(--a);}
+.ri2-badge.ready{background:var(--gd);color:var(--g);}
+.ri2-badge.saved{background:var(--gm);color:var(--g);font-weight:600;}
+.ri2-badge.skipped{background:var(--rd);color:var(--r);}
+.ri2-badge.failed{background:var(--rd);color:var(--r);}
+.ri2-body{display:none;padding:10px 12px 12px;border-top:1px solid var(--b1);background:var(--s2);}
+.ri2-body.open{display:block;}
+/* EDIT TABLE */
+.etbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px;}
+.etbl th{font-family:var(--fm);font-size:10px;color:var(--t3);text-align:left;padding:5px 7px;border-bottom:1px solid var(--b1);font-weight:400;text-transform:uppercase;letter-spacing:.04em;}
+.etbl td{padding:5px 7px;border-bottom:1px solid var(--b1);vertical-align:middle;}
+.etbl tr:last-child td{border:none;}
+.ev{width:76px;padding:3px 6px;background:var(--s3);border:1px solid var(--b2);border-radius:5px;color:var(--t1);font-size:11px;font-family:var(--fm);outline:none;}
+.ev:focus{border-color:var(--g);}
+.del-row{padding:2px 6px;font-size:10px;border:1px solid var(--r);border-radius:4px;background:none;color:var(--r);cursor:pointer;}
+.badge2{display:inline-flex;padding:2px 6px;border-radius:4px;font-size:10px;font-family:var(--fm);}
+.badge2.n{background:var(--gd);color:var(--g)}.badge2.h{background:var(--rd);color:var(--r)}.badge2.l{background:var(--ad);color:var(--a)}.badge2.c{background:var(--r);color:#fff}
+.ri2-actions{display:flex;gap:8px;}
+/* DATA TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-family:var(--fm);font-size:10px;color:var(--t3);text-align:left;padding:6px 10px;border-bottom:1px solid var(--b1);font-weight:400;text-transform:uppercase;letter-spacing:.04em;}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--b1);font-size:13px;vertical-align:middle;}
+.tbl tr:last-child td{border:none;}
+.tbl tr:hover td{background:var(--s2);}
+.empty{text-align:center;padding:32px;color:var(--t3);font-size:13px;}
+.urow{cursor:pointer;}
+.udet{display:none;background:var(--s2);}
+.udet td{padding:8px 18px 12px;font-size:12px;font-family:var(--fm);color:var(--t2);line-height:1.9;}
+.log-wrap{max-height:200px;overflow-y:auto;font-family:var(--fm);font-size:12px;color:var(--t2);line-height:1.9;}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="lcard">
+    <div class="llogo">LabAI</div>
+    <div class="lsub">Admin · Restricted Access</div>
+    <input class="linput" type="password" id="pw" placeholder="Enter admin password">
+    <button class="lbtn" onclick="login()">Sign in →</button>
+    <div class="lerr" id="lerr"></div>
+    <a href="/" class="lback">← Back to home</a>
+  </div>
+</div>
+
+<div id="app">
+<div class="shell">
+  <aside class="sb">
+    <div class="sb-logo">
+      <div class="sb-name">LabAI</div>
+      <div class="sb-tag">Admin Dashboard</div>
+    </div>
+    <nav class="nav">
+      <div class="ns">Overview</div>
+      <button class="nb active" onclick="go('dash',this)"><span class="nb-ic">📊</span>Dashboard</button>
+      <div class="ns">Training</div>
+      <button class="nb" onclick="go('upload',this)"><span class="nb-ic">🧬</span>Batch Upload</button>
+      <button class="nb" onclick="go('review',this)"><span class="nb-ic">✏️</span>Review Queue</button>
+      <button class="nb" onclick="go('saved',this)"><span class="nb-ic">🗂</span>Saved Data</button>
+      <button class="nb" onclick="go('deploy',this)"><span class="nb-ic">🧠</span>Train & Deploy</button>
+      <div class="ns">Data</div>
+      <button class="nb" onclick="go('uploads',this)"><span class="nb-ic">📥</span>User Uploads</button>
+    </nav>
+    <div class="sb-footer">
+      <div><span class="sdot on"></span>Server connected</div>
+      <div style="margin-top:3px"><span class="sdot" id="m-dot"></span><span id="m-txt">No model</span></div>
+      <div style="margin-top:5px;color:var(--t3)" id="sb-counts"></div>
+      <button class="out-btn" onclick="location.href='/'">← Home</button>
+      <button class="out-btn" style="margin-top:5px" onclick="location.reload()">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dash">
+      <h1 class="pt">Dashboard</h1><p class="ps2">Live system overview</p>
+      <div class="srow">
+        <div class="sc b"><div class="sn" id="d-up">—</div><div class="sl">User uploads</div></div>
+        <div class="sc g"><div class="sn" id="d-tr">—</div><div class="sl">Training records</div></div>
+        <div class="sc a"><div class="sn" id="d-ver">—</div><div class="sl">Model version</div></div>
+        <div class="sc r"><div class="sn" id="d-fl">—</div><div class="sl">Flagged reports</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">Recent user uploads</div>
+        <table class="tbl"><thead><tr><th>File</th><th>Tests</th><th>Flagged</th><th>ML score</th><th>Time</th></tr></thead>
+        <tbody id="d-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- BATCH UPLOAD -->
+    <div class="panel" id="panel-upload">
+      <h1 class="pt">Batch Upload</h1>
+      <p class="ps2">Upload Kaggle lab report images — server OCRs them in background, no browser crash</p>
+      <div class="uz" id="udz" onclick="document.getElementById('ufin').click()">
+        <div class="ui">🧬</div>
+        <h3>Upload lab report images</h3>
+        <p>Select multiple files — server processes them all</p>
+        <div class="uhint">JPG · PNG · PDF · OCR runs server-side</div>
+      </div>
+      <input type="file" id="ufin" accept="image/*,.pdf,.txt" multiple onchange="handleBatch(event)">
+      <div class="pw2" id="u-pw" style="display:none"><div class="pl2" id="u-pl">Uploading…</div><div class="pb2"><div class="pf2" id="u-pf" style="width:0%"></div></div></div>
+      <div class="st" id="u-st"></div>
+
+      <div id="batch-wrap" style="display:none;margin-top:14px">
+        <div class="card">
+          <div class="batch-nums">
+            <div class="bn b"><div class="bn-num" id="bj-tot">0</div><div class="bn-lbl">Total</div></div>
+            <div class="bn"><div class="bn-num" id="bj-proc">0</div><div class="bn-lbl">Processed</div></div>
+            <div class="bn g"><div class="bn-num" id="bj-ready">0</div><div class="bn-lbl">Ready</div></div>
+            <div class="bn g"><div class="bn-num" id="bj-saved">0</div><div class="bn-lbl">Saved</div></div>
+            <div class="bn a"><div class="bn-num" id="bj-skip">0</div><div class="bn-lbl">Skipped</div></div>
+          </div>
+          <div class="pb2"><div class="pf2" id="bj-fill" style="width:0%"></div></div>
+          <div style="margin-top:6px;font-size:11px;color:var(--t3);font-family:var(--fm)" id="bj-stxt">Processing…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEW QUEUE -->
+    <div class="panel" id="panel-review">
+      <h1 class="pt">Review Queue</h1>
+      <p class="ps2">Edit wrong values · Save or skip each image</p>
+      <div class="brow" style="margin-bottom:12px">
+        <button class="btn" onclick="loadReview()">↺ Refresh</button>
+        <span style="font-size:12px;color:var(--t3);font-family:var(--fm)" id="rev-counts"></span>
+      </div>
+      <div class="st" id="rev-st"></div>
+      <div id="rev-list"><div class="empty">No active batch job. Upload images first.</div></div>
+    </div>
+
+    <!-- SAVED DATA -->
+    <div class="panel" id="panel-saved">
+      <h1 class="pt">Saved Training Data</h1><p class="ps2">All approved records in Supabase</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div id="saved-count" style="font-size:13px;color:var(--t2)">Loading…</div>
+        <button class="btn danger" onclick="clearTraining()">Clear all</button>
+      </div>
+      <div id="saved-list"></div>
+    </div>
+
+    <!-- TRAIN & DEPLOY -->
+    <div class="panel" id="panel-deploy">
+      <h1 class="pt">Train & Deploy</h1><p class="ps2">Train TF.js neural network in browser · Deploy to all users</p>
+      <div class="card"><div class="ct">Deployed model</div><div id="minfo" style="font-size:13px;color:var(--t2)">Loading…</div></div>
+      <div class="card">
+        <div class="ct">Settings</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div>
+            <label style="font-size:11px;color:var(--t2);font-family:var(--fm);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Data source</label>
+            <select id="dsrc" style="width:100%;padding:7px 10px;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-size:13px;">
+              <option value="admin">Admin approved only</option>
+              <option value="both" selected>Admin + user uploads</option>
+              <option value="user">User uploads only</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--t2);font-family:var(--fm);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Min tests per record</label>
+            <input type="number" id="mintests" value="5" min="1" style="width:100%;padding:7px 10px;background:var(--s2);border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-size:13px;font-family:var(--fm);">
+          </div>
+        </div>
+        <div class="brow">
+          <button class="btn primary" id="trn-btn" onclick="trainDeploy()">🧠 Train & Deploy to all users</button>
+          <button class="btn" onclick="loadModelInfo()">↺ Refresh</button>
+        </div>
+      </div>
+      <div class="pw2" id="m-pw" style="display:none"><div class="pl2" id="m-pl">Starting…</div><div class="pb2"><div class="pf2" id="m-pf" style="width:0%"></div></div></div>
+      <div class="st" id="m-st"></div>
+      <div class="card" id="log-card" style="display:none"><div class="ct">Training log</div><div class="log-wrap" id="tlog"></div></div>
+    </div>
+
+    <!-- USER UPLOADS -->
+    <div class="panel" id="panel-uploads">
+      <h1 class="pt">User Uploads</h1><p class="ps2">Anonymous reports from users</p>
+      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+        <div class="sc b" style="padding:10px 14px"><div class="sn" id="u-tot" style="font-size:20px">—</div><div class="sl">Total</div></div>
+        <div class="sc a" style="padding:10px 14px"><div class="sn" id="u-flg" style="font-size:20px">—</div><div class="sl">Flagged</div></div>
+        <button class="btn danger" style="align-self:center" onclick="clearUploads()">Clear all</button>
+      </div>
+      <div class="card">
+        <div class="ct">All submissions — click to expand</div>
+        <div style="overflow-x:auto">
+          <table class="tbl" style="min-width:580px">
+            <thead><tr><th>File</th><th>Tests</th><th>Flagged</th><th>ML</th><th>Date</th><th>Preview</th></tr></thead>
+            <tbody id="u-tbody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.10.0/tf.min.js"></script>
+<script>
+// ── AUTH ──────────────────────────────────────────────────────────
+let tok=null, curJobId=null, pollTmr=null;
+
+async function login(){
+  const pw=document.getElementById('pw').value;
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    const d=await r.json();
+    if(d.ok){tok=d.token;document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';initAdmin();}
+    else{document.getElementById('lerr').textContent='Wrong password.';setTimeout(()=>document.getElementById('lerr').textContent='',2500);}
+  }catch{document.getElementById('lerr').textContent='Connection error.';}
+}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+function ah(){return {'X-Admin-Token':tok,'Content-Type':'application/json'};}
+
+// ── NAV ───────────────────────────────────────────────────────────
+function go(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  ({dash:loadDash,review:loadReview,saved:loadSaved,deploy:loadModelInfo,uploads:loadUploads})[name]?.();
+}
+
+async function initAdmin(){await loadDash();}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+async function loadDash(){
+  const r=await fetch('/api/admin/stats',{headers:ah()});
+  const d=await r.json();
+  document.getElementById('d-up').textContent=d.upload_count||0;
+  document.getElementById('d-tr').textContent=d.train_count||0;
+  document.getElementById('d-fl').textContent=d.flagged||0;
+  document.getElementById('d-ver').textContent=d.model?`v${d.model.version}`:'—';
+  document.getElementById('sb-counts').textContent=`${d.train_count||0} training · ${d.upload_count||0} user`;
+  if(d.model)setMS(`v${d.model.version} live`,'on');
+  const tb=document.getElementById('d-tbody');
+  if(!d.recent_uploads?.length){tb.innerHTML='<tr><td colspan="5" class="empty">No uploads yet</td></tr>';return;}
+  tb.innerHTML=d.recent_uploads.map(u=>`<tr>
+    <td style="font-family:var(--fm);font-size:12px">${(u.filename||'—').substring(0,26)}</td>
+    <td><span class="badge2 n">${u.val_count||0}</span></td>
+    <td><span class="badge2 ${(u.flagged_cnt||0)>0?'h':'n'}">${u.flagged_cnt||0}</span></td>
+    <td>${u.ml_score!=null?`<span class="badge2 ${u.ml_score>60?'h':u.ml_score>30?'l':'n'}">${u.ml_score}</span>`:'—'}</td>
+    <td style="font-size:11px;color:var(--t3);font-family:var(--fm)">${u.created_at?new Date(u.created_at).toLocaleString():'—'}</td>
+  </tr>`).join('');
+}
+function setMS(txt,s){document.getElementById('m-dot').className='sdot'+(s==='on'?' on':s==='pulse'?' pulse':'');document.getElementById('m-txt').textContent=txt;}
+
+// ── BATCH UPLOAD ──────────────────────────────────────────────────
+const udz=document.getElementById('udz');
+udz.addEventListener('dragover',e=>{e.preventDefault();udz.classList.add('drag');});
+udz.addEventListener('dragleave',()=>udz.classList.remove('drag'));
+udz.addEventListener('drop',e=>{e.preventDefault();udz.classList.remove('drag');e.dataTransfer.files.length&&handleBatch({target:{files:e.dataTransfer.files}});});
+
+async function handleBatch(e){
+  const files=Array.from(e.target.files);if(e.target.value)e.target.value='';if(!files.length)return;
+  setSt(document.getElementById('u-st'),'info',`Uploading ${files.length} files…`);
+  document.getElementById('u-pw').style.display='block';
+  const fd=new FormData();files.forEach(f=>fd.append('files',f));
+  try{
+    const xhr=new XMLHttpRequest();
+    xhr.open('POST','/api/admin/batch/start');
+    xhr.setRequestHeader('X-Admin-Token',tok);
+    xhr.upload.onprogress=ev=>{if(ev.lengthComputable){const p=Math.round(ev.loaded/ev.total*100);document.getElementById('u-pl').textContent=`Uploading: ${p}%`;document.getElementById('u-pf').style.width=p+'%';}};
+    const resp=await new Promise((res,rej)=>{xhr.onload=()=>xhr.status===200?res(JSON.parse(xhr.responseText)):rej(new Error(xhr.status));xhr.onerror=()=>rej(new Error('Upload failed'));xhr.send(fd);});
+    document.getElementById('u-pw').style.display='none';
+    curJobId=resp.job_id;
+    setSt(document.getElementById('u-st'),'ok',`✓ ${files.length} files uploaded. Server is OCR-processing them now.`);
+    document.getElementById('batch-wrap').style.display='block';
+    if(pollTmr)clearInterval(pollTmr);
+    pollTmr=setInterval(()=>pollBatch(resp.job_id),2000);
+    pollBatch(resp.job_id);
+  }catch(err){document.getElementById('u-pw').style.display='none';setSt(document.getElementById('u-st'),'err','Upload failed: '+err.message);}
+}
+
+async function pollBatch(jid){
+  try{
+    const r=await fetch(`/api/admin/batch/${jid}/status`,{headers:ah()});
+    const d=await r.json();
+    const pct=d.total>0?Math.round(d.processed/d.total*100):0;
+    document.getElementById('bj-tot').textContent=d.total;
+    document.getElementById('bj-proc').textContent=d.processed;
+    document.getElementById('bj-ready').textContent=(d.items||[]).filter(i=>i.status==='ready').length;
+    document.getElementById('bj-saved').textContent=d.saved;
+    document.getElementById('bj-skip').textContent=d.skipped;
+    document.getElementById('bj-fill').style.width=pct+'%';
+    document.getElementById('bj-stxt').textContent=d.status==='done'?`✓ Done — ${d.processed} processed`:`Processing… ${d.processed}/${d.total}`;
+    if(d.status==='done'||d.status==='error'){clearInterval(pollTmr);pollTmr=null;}
+  }catch(e){console.error(e);}
+}
+
+// ── REVIEW ────────────────────────────────────────────────────────
+async function loadReview(){
+  if(!curJobId){document.getElementById('rev-list').innerHTML='<div class="empty">No active batch. Upload images first.</div>';return;}
+  const r=await fetch(`/api/admin/batch/${curJobId}/status`,{headers:ah()});
+  const d=await r.json();
+  const items=d.items||[];
+  const ready=items.filter(i=>i.status==='ready').length;
+  const saved=items.filter(i=>i.status==='saved').length;
+  document.getElementById('rev-counts').textContent=`${ready} ready · ${saved} saved · ${d.skipped} skipped`;
+  const el=document.getElementById('rev-list');
+  if(!items.length){el.innerHTML='<div class="empty">No items yet</div>';return;}
+  el.innerHTML=items.map((item,idx)=>`
+    <div class="ri2 ${item.status==='ready'?'ready':''}" id="ritem-${idx}">
+      <div class="ri2-hdr" onclick="toggleRI(${idx})">
+        <div class="ri2-name">📄 ${item.filename}</div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--fm);margin-right:8px">${item.val_count||0} values</div>
+        <div class="ri2-badge ${item.status}">${item.status}</div>
+      </div>
+      ${item.status==='ready'?`
+      <div class="ri2-body" id="rbody-${idx}">
+        <table class="etbl"><thead><tr><th>Test</th><th>Value</th><th>Status</th><th></th></tr></thead>
+        <tbody>${buildRows(item.values||{},idx)}</tbody></table>
+        <div class="ri2-actions">
+          <button class="btn primary" onclick="approveItem('${item.filename}',${idx})">✓ Save to training</button>
+          <button class="btn danger" onclick="skipItem('${item.filename}',${idx})">✗ Skip</button>
+        </div>
+      </div>`:''}
+    </div>`).join('');
+}
+
+const SIMPLEREF={Hemoglobin:{lo:12,hi:17.5},WBC:{lo:4,hi:11},Platelets:{lo:150,hi:400},TSH:{lo:0.4,hi:4.0},'Free T4':{lo:0.8,hi:1.8},ALT:{lo:0,hi:40},AST:{lo:0,hi:40},Creatinine:{lo:0.6,hi:1.2},BUN:{lo:7,hi:25},eGFR:{lo:60,hi:999},'Fasting Glucose':{lo:70,hi:100},HbA1c:{lo:0,hi:5.6},'Total Cholesterol':{lo:0,hi:200},'LDL Cholesterol':{lo:0,hi:100},'HDL Cholesterol':{lo:40,hi:999},Triglycerides:{lo:0,hi:150},Ferritin:{lo:12,hi:300},Sodium:{lo:136,hi:145},Potassium:{lo:3.5,hi:5.0},Calcium:{lo:8.5,hi:10.5}};
+function buildRows(values,idx){
+  return Object.entries(values||{}).map(([name,val],ri)=>{
+    const ref=SIMPLEREF[name];
+    const s=ref?(val<ref.lo?'l':val>ref.hi?'h':'n'):'n';
+    return `<tr class="${s!=='n'?'ri2-flagged':''}" id="row-${idx}-${ri}" data-name="${name}">
+      <td style="font-family:var(--fm);font-size:11px">${name}</td>
+      <td><input class="ev" type="number" step="0.01" value="${val}" id="ev-${idx}-${ri}"></td>
+      <td><span class="badge2 ${s}">${s==='h'?'HIGH':s==='l'?'LOW':'OK'}</span></td>
+      <td><button class="del-row" onclick="delRow(${idx},${ri},'${name}')">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+function delRow(idx,ri,name){const r=document.getElementById(`row-${idx}-${ri}`);if(r)r.remove();}
+function toggleRI(idx){const b=document.getElementById(`rbody-${idx}`);if(b)b.classList.toggle('open');}
+
+function getVals(idx){
+  const vals={};
+  document.querySelectorAll(`#rbody-${idx} tbody tr`).forEach(row=>{
+    const n=row.dataset.name;
+    const inp=row.querySelector('input');
+    if(n&&inp){const v=parseFloat(inp.value);if(!isNaN(v)&&v>0)vals[n]=v;}
+  });
+  return vals;
+}
+
+async function approveItem(filename,idx){
+  const vals=getVals(idx);
+  if(Object.keys(vals).length<2){alert('Need at least 2 values.');return;}
+  const r=await fetch(`/api/admin/batch/${curJobId}/item/${encodeURIComponent(filename)}/approve`,{method:'POST',headers:ah(),body:JSON.stringify({values:vals})});
+  const d=await r.json();
+  if(d.ok){
+    const el=document.getElementById(`ritem-${idx}`);
+    if(el){el.querySelector('.ri2-badge').className='ri2-badge saved';el.querySelector('.ri2-badge').textContent='saved';el.querySelector('.ri2-body')?.classList.remove('open');}
+    setSt(document.getElementById('rev-st'),'ok',`✓ "${filename}" saved.`);
+  }
+}
+async function skipItem(filename,idx){
+  await fetch(`/api/admin/batch/${curJobId}/item/${encodeURIComponent(filename)}/skip`,{method:'POST',headers:ah()});
+  const el=document.getElementById(`ritem-${idx}`);
+  if(el){el.querySelector('.ri2-badge').className='ri2-badge skipped';el.querySelector('.ri2-badge').textContent='skipped';el.querySelector('.ri2-body')?.classList.remove('open');}
+}
+
+// ── SAVED ─────────────────────────────────────────────────────────
+async function loadSaved(){
+  const r=await fetch('/api/admin/training',{headers:ah()});
+  const d=await r.json();
+  const recs=d.records||[];
+  document.getElementById('saved-count').textContent=`${recs.length} approved records`;
+  if(!recs.length){document.getElementById('saved-list').innerHTML='<div class="empty">No saved data yet.</div>';return;}
+  document.getElementById('saved-list').innerHTML=recs.map(r=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--s1);border:1px solid var(--b1);border-radius:8px;margin-bottom:5px;gap:10px">
+      <div>
+        <div style="font-size:13px;font-weight:500">📄 ${r.filename||'unknown'}</div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--fm);margin-top:1px">${r.created_at?new Date(r.created_at).toLocaleDateString():'—'} · ${r.val_count} values</div>
+      </div>
+      <button class="btn danger" style="font-size:11px;padding:4px 9px" onclick="delRec(${r.id})">Remove</button>
+    </div>`).join('');
+}
+async function delRec(id){await fetch(`/api/admin/training/${id}`,{method:'DELETE',headers:ah()});loadSaved();}
+async function clearTraining(){
+  if(!confirm('Delete all training data?'))return;
+  const r=await fetch('/api/admin/training',{headers:ah()});
+  const d=await r.json();
+  await Promise.all((d.records||[]).map(rec=>fetch(`/api/admin/training/${rec.id}`,{method:'DELETE',headers:ah()})));
+  loadSaved();
+}
+
+// ── TRAIN & DEPLOY ────────────────────────────────────────────────
+const FEAT_KEYS=["Hemoglobin","WBC","Platelets","TSH","Free T4","ALT","AST","Creatinine","BUN","eGFR","Fasting Glucose","HbA1c","Total Cholesterol","LDL Cholesterol","HDL Cholesterol","Triglycerides","Ferritin","Sodium","Potassium","Calcium"];
+
+async function loadModelInfo(){
+  const r=await fetch('/api/model/current');const d=await r.json();
+  const el=document.getElementById('minfo');
+  if(!d.ok){el.innerHTML='<span style="color:var(--t3)">No model deployed yet.</span>';setMS('No model','');return;}
+  el.innerHTML=`<div style="display:flex;gap:24px">
+    <div><div style="font-size:10px;color:var(--t3);font-family:var(--fm);margin-bottom:2px;text-transform:uppercase">Version</div><div style="font-size:22px;font-weight:600;font-family:var(--fm);color:var(--g)">v${d.version}</div></div>
+    <div><div style="font-size:10px;color:var(--t3);font-family:var(--fm);margin-bottom:2px;text-transform:uppercase">Trained on</div><div style="font-size:22px;font-weight:600;font-family:var(--fm)">${d.training_size} records</div></div>
+  </div>`;
+  setMS(`v${d.version} · ${d.training_size} records`,'on');
+  document.getElementById('d-ver').textContent=`v${d.version}`;
+}
+
+function buildAE(){
+  const inp=tf.input({shape:[20]});
+  let x=tf.layers.dense({units:16,activation:'relu'}).apply(inp);
+  x=tf.layers.dense({units:8,activation:'relu'}).apply(x);x=tf.layers.dense({units:4,activation:'relu'}).apply(x);
+  x=tf.layers.dense({units:8,activation:'relu'}).apply(x);x=tf.layers.dense({units:16,activation:'relu'}).apply(x);
+  const out=tf.layers.dense({units:20,activation:'linear'}).apply(x);
+  const m=tf.model({inputs:inp,outputs:out});m.compile({optimizer:tf.train.adam(.001),loss:'meanSquaredError'});
+  return m;
+}
+
+async function trainDeploy(){
+  const btn=document.getElementById('trn-btn'),mst=document.getElementById('m-st');
+  const mpw=document.getElementById('m-pw'),lc=document.getElementById('log-card'),tlog=document.getElementById('tlog');
+  btn.disabled=true;mpw.style.display='block';lc.style.display='block';tlog.innerHTML='';
+  setMS('Training…','pulse');setSt(mst,'info','Fetching training data from server…');
+  const log=m=>{tlog.innerHTML+=m+'<br>';tlog.scrollTop=tlog.scrollHeight;};
+  setP('m-pl','m-pf','Fetching…',5);
+  try{
+    const r=await fetch('/api/admin/model/train',{method:'POST',headers:ah(),body:JSON.stringify({source:document.getElementById('dsrc').value,min_tests:parseInt(document.getElementById('mintests').value)||5})});
+    const d=await r.json();
+    if(!d.ok&&d.error){setSt(mst,'err',d.error);mpw.style.display='none';btn.disabled=false;return;}
+    log(`→ ${d.record_count} records from server`);
+    setP('m-pl','m-pf','Training…',20);
+    const {means,stds}=d.stats;
+    const normRows=d.matrix.map(row=>row.map((v,i)=>(v-means[i])/(stds[i]||1)));
+    const xs=tf.tensor2d(normRows);
+    const model=buildAE();
+    const epochs=Math.min(300,Math.max(60,normRows.length*6));
+    await model.fit(xs,xs,{epochs,batchSize:Math.min(32,Math.max(4,Math.floor(normRows.length/2))),shuffle:true,
+      callbacks:{onEpochEnd:(ep)=>{setP('m-pl','m-pf',`Training: ${Math.round(ep/epochs*100)}%`,20+Math.round(ep/epochs*65));if(ep%50===0)log(`  Epoch ${ep}/${epochs}`);}
+    }});
+    xs.dispose();
+    log('→ Done. Deploying to server…');
+    setP('m-pl','m-pf','Deploying…',88);
+    const weights=model.getWeights().map(w=>({data:Array.from(w.dataSync()),shape:w.shape}));
+    const dr=await fetch('/api/admin/model/deploy',{method:'POST',headers:ah(),body:JSON.stringify({weights,stats:{means,stds},training_size:d.record_count})});
+    const dd=await dr.json();
+    log(`→ Model v${dd.version} deployed ✓`);
+    setP('m-pl','m-pf','Done!',100);
+    await new Promise(r=>setTimeout(r,300));mpw.style.display='none';
+    setSt(mst,'ok',`✓ Model v${dd.version} deployed. Trained on ${d.record_count} records.`);
+    setMS(`v${dd.version} live`,'on');
+    await loadModelInfo();
+  }catch(err){setSt(mst,'err','Error: '+err.message);log('✗ '+err.message);mpw.style.display='none';setMS('Error','');}
+  btn.disabled=false;
+}
+
+// ── USER UPLOADS ──────────────────────────────────────────────────
+async function loadUploads(){
+  const r=await fetch('/api/admin/uploads',{headers:ah()});const d=await r.json();
+  const ups=d.uploads||[];
+  document.getElementById('u-tot').textContent=ups.length;
+  document.getElementById('u-flg').textContent=ups.filter(u=>(u.flagged_cnt||0)>0).length;
+  const tb=document.getElementById('u-tbody');
+  if(!ups.length){tb.innerHTML='<tr><td colspan="6" class="empty">No uploads yet</td></tr>';return;}
+  tb.innerHTML=ups.map((u,i)=>{
+    let vals={};try{vals=JSON.parse(u.values_json||'{}');}catch{}
+    const prev=Object.entries(vals).slice(0,3).map(([k,v])=>`${k}:${v}`).join(', ');
+    const allV=Object.entries(vals).map(([k,v])=>`<span style="margin-right:10px">${k}:<strong style="color:var(--t1)">${v}</strong></span>`).join('');
+    const ml=u.ml_score!=null?u.ml_score:'—',mc=ml>60?'h':ml>30?'l':'n';
+    return `<tr class="urow" onclick="toggleU('ud${i}')">
+      <td style="font-family:var(--fm);font-size:12px">${(u.filename||'—').substring(0,24)}</td>
+      <td><span class="badge2 n">${u.val_count||0}</span></td>
+      <td><span class="badge2 ${(u.flagged_cnt||0)>0?'h':'n'}">${u.flagged_cnt||0}</span></td>
+      <td>${ml!=='—'?`<span class="badge2 ${mc}">${ml}</span>`:'—'}</td>
+      <td style="font-size:11px;color:var(--t3);font-family:var(--fm)">${u.created_at?new Date(u.created_at).toLocaleString():'—'}</td>
+      <td style="font-size:11px;color:var(--t3);font-family:var(--fm);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${prev}</td>
+    </tr><tr class="udet" id="ud${i}"><td colspan="6">${allV||'No values'}</td></tr>`;
+  }).join('');
+}
+function toggleU(id){const el=document.getElementById(id);el.style.display=el.style.display==='table-row'?'none':'table-row';}
+async function clearUploads(){if(!confirm('Delete all user uploads?'))return;await fetch('/api/admin/uploads/clear',{method:'DELETE',headers:ah()});loadUploads();}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function setSt(el,type,msg){el.className=type?`st show ${type}`:'st';el.textContent=msg;}
+function setP(lbl,fill,txt,pct){document.getElementById(lbl).textContent=txt;document.getElementById(fill).style.width=pct+'%';}
+</script>
+</body>
+</html>
